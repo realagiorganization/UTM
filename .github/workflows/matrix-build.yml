@@ -1,0 +1,64 @@
+name: Matrix Build
+
+on:
+  push:
+    branches:
+      - main
+      - pr-merge-main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  matrix-build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-stable-x86_64
+            base_image: ubuntu:22.04
+            rust_toolchain: stable
+            target: x86_64-unknown-linux-gnu
+          - name: ubuntu-nightly-aarch64
+            base_image: ubuntu:24.04
+            rust_toolchain: nightly
+            target: aarch64-unknown-linux-gnu
+          - name: debian-beta-x86_64
+            base_image: debian:bookworm
+            rust_toolchain: beta
+            target: x86_64-unknown-linux-gnu
+    env:
+      RUSTUP_HOME: /tmp/rustup
+      CARGO_HOME: /tmp/cargo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for combo
+        run: |
+          docker build \
+            --file docker/matrix.Dockerfile \
+            --build-arg BASE_IMAGE="${{ matrix.base_image }}" \
+            --build-arg RUST_TOOLCHAIN="${{ matrix.rust_toolchain }}" \
+            --build-arg TARGET="${{ matrix.target }}" \
+            --tag utm-matrix:${{ matrix.name }} \
+            .
+
+      - name: Extract build artifacts
+        run: |
+          container_id=$(docker create utm-matrix:${{ matrix.name }})
+          mkdir -p output
+          docker cp "$container_id":/workspace/target "${{ github.workspace }}/output/target"
+          docker rm "$container_id"
+
+      - name: Upload cargo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-target-${{ matrix.name }}
+          path: output/target

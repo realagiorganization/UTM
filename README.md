@@ -49,6 +49,21 @@ UTM is also available for macOS: https://mac.getutm.app/
 
 ### [iOS Development](Documentation/iOSDevelopment.md)
 
+## Build Matrix
+
+The Docker × Rust build matrix is generated from `tools/status_table`:
+
+- `cargo run --manifest-path tools/status_table/Cargo.toml -- --format markdown`
+- `cargo run --manifest-path tools/status_table/Cargo.toml -- --format csv`
+
+Latest workflow results:
+
+| Variation | Base Image | Rust Toolchain | Target | Status |
+| --- | --- | --- | --- | --- |
+| `ubuntu-stable-x86_64` | `ubuntu:22.04` | `stable` | `x86_64-unknown-linux-gnu` | [![ubuntu-stable-x86_64](https://github.com/realagiorganization/UTM/actions/workflows/matrix-build.yml/badge.svg?branch=main&label=ubuntu%2Dstable%2Dx86%5F64)](https://github.com/realagiorganization/UTM/actions?query=workflow%3A%22Matrix%20Build%22+branch%3Amain+matrix%3Aubuntu%2Dstable%2Dx86%5F64) |
+| `ubuntu-nightly-aarch64` | `ubuntu:24.04` | `nightly` | `aarch64-unknown-linux-gnu` | [![ubuntu-nightly-aarch64](https://github.com/realagiorganization/UTM/actions/workflows/matrix-build.yml/badge.svg?branch=main&label=ubuntu%2Dnightly%2Daarch64)](https://github.com/realagiorganization/UTM/actions?query=workflow%3A%22Matrix%20Build%22+branch%3Amain+matrix%3Aubuntu%2Dnightly%2Daarch64) |
+| `debian-beta-x86_64` | `debian:bookworm` | `beta` | `x86_64-unknown-linux-gnu` | [![debian-beta-x86_64](https://github.com/realagiorganization/UTM/actions/workflows/matrix-build.yml/badge.svg?branch=main&label=debian%2Dbeta%2Dx86%5F64)](https://github.com/realagiorganization/UTM/actions?query=workflow%3A%22Matrix%20Build%22+branch%3Amain+matrix%3Adebian%2Dbeta%2Dx86%5F64) |
+
 ## Related
 
 * [iSH][4]: emulates a usermode Linux terminal interface for running x86 Linux applications on iOS
