@@ -1,0 +1,18 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{awesome-qa-chat}[2025/10/14 Minimal Awesome QA Chat styling]
+
+\RequirePackage{xcolor}
+\RequirePackage{enumitem}
+
+\newlist{awesomeqa}{description}{1}
+\setlist[awesomeqa]{labelsep=1em, leftmargin=2.5cm, style=nextline}
+
+\newenvironment{AwesomeQAChat}{%
+  \begin{awesomeqa}%
+}{%
+  \end{awesomeqa}%
+}
+
+\newcommand{\QA}[2]{%
+  \item[\textcolor{blue!70!black}{#1}] #2%
+}
