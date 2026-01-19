@@ -16,7 +16,7 @@
       "location" : "https://github.com/utmapp/CocoaSpice.git",
       "state" : {
         "branch" : "main",
-        "revision" : "df88e8336627aad5cb5ee6480be59837d43715f2"
+        "revision" : "ff3fb176c8b7ff13acf9e3832347ec7ffab2fa1c"
       }
     },
     {
@@ -97,7 +97,7 @@
       "location" : "https://github.com/osy/SwiftPortmap.git",
       "state" : {
         "branch" : "main",
-        "revision" : "72782141ab6f6f6db58bd16bac96d4e7ce901e9a"
+        "revision" : "20a866c101ceae22d83d4dc86e46c3bad0adbc26"
       }
     },
     {
