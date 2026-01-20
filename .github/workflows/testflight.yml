@@ -14,6 +14,9 @@ env:
   RUNNER_IMAGE: macos-15
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: 60
 
+permissions:
+  contents: read
+
 jobs:
   configuration:
     name: Setup configuration
@@ -40,9 +43,10 @@ jobs:
     needs: configuration
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
+          ref: ${{ github.ref }}
       - name: Setup Xcode
         shell: bash
         run: |
@@ -88,9 +92,10 @@ jobs:
         ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
+          ref: ${{ github.ref }}
       - name: Cache Sysroot
         id: cache-sysroot
         uses: actions/cache/restore@v4
