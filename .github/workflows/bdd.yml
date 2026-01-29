@@ -1,0 +1,44 @@
+name: BDD Suite
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "bdd/**"
+      - "automation/vhs/**"
+      - ".github/workflows/bdd.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  bdd:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, 'chore: update bdd gif')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install BDD dependencies
+        run: pip install behave
+
+      - name: Run BDD suite
+        run: behave bdd/features/utm_primary_use_cases.feature
+
+      - name: Record BDD run
+        uses: charmbracelet/vhs-action@v2
+        with:
+          path: automation/vhs/bdd.tape
+
+      - name: Commit BDD recording
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update bdd gif"
+          file_pattern: automation/vhs/bdd.gif
