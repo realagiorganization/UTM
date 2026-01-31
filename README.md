@@ -1,5 +1,5 @@
 #  UTM
-[![Build](https://github.com/realagiorganization/UTM/actions/workflows/build.yml/badge.svg?branch=main)][1] [![TestFlight Release](https://github.com/realagiorganization/UTM/actions/workflows/testflight.yml/badge.svg?branch=main)][6] [![BDD Suite](https://github.com/realagiorganization/UTM/actions/workflows/bdd.yml/badge.svg?branch=main)][7]
+[![Build](https://github.com/realagiorganization/UTM/actions/workflows/build.yml/badge.svg?branch=main)][1] [![TestFlight Release](https://github.com/realagiorganization/UTM/actions/workflows/testflight.yml/badge.svg?branch=main)][6] [![BDD Suite](https://github.com/realagiorganization/UTM/actions/workflows/bdd.yml/badge.svg?branch=main)][7] [![LLM CLI BDD](https://github.com/realagiorganization/UTM/actions/workflows/opencode-bdd.yml/badge.svg?branch=main)][8]
 
 > It is possible to invent a single machine which can be used to compute any computable sequence.
 
@@ -27,6 +27,10 @@ UTM is a full featured system emulator and virtual machine host for iOS and macO
 ## BDD Suite
 
 ![BDD run recording](automation/vhs/bdd.gif)
+
+## LLM CLI BDD
+
+![LLM CLI run recording](automation/vhs/opencode.gif)
 
 ## Additional macOS Features
 
@@ -97,3 +101,4 @@ Continuous integration hosting is provided by [MacStadium](https://www.macstadiu
   [5]: https://github.com/holzschu/a-shell
   [6]: https://github.com/realagiorganization/UTM/actions/workflows/testflight.yml
   [7]: https://github.com/realagiorganization/UTM/actions/workflows/bdd.yml
+  [8]: https://github.com/realagiorganization/UTM/actions/workflows/opencode-bdd.yml
