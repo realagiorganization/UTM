@@ -6,3 +6,4 @@
 - The LLM CLI BDD scenario uses a local mock request with `OPENCODE_LLM_KEY` to avoid calling external LLM services while still validating secret handling.
 - The GitHub Pages smoke test for 2026-01-31 uses the latest Discord-provided screenshot attachments as the capture set.
 - The LLM CLI BDD GIF is a local placeholder until the GitHub Actions workflow overwrites it with the real VHS capture.
+- The GitHub Pages smoke test for 2026-02-01 uses the latest Discord-provided screenshot attachments as the capture set.
