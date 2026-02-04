@@ -13,6 +13,7 @@ PDF is copied into this `docs/` directory so it becomes immediately accessible:
 - [GitHub Pages smoke test screenshots (2026-01-31)](./gh-pages-smoke-test-2026-01-31.md)
 - [GitHub Pages smoke test screenshots (2026-02-01)](./gh-pages-smoke-test-2026-02-01.md)
 - [GitHub Pages smoke test screenshots (2026-02-02)](./gh-pages-smoke-test-2026-02-02.md)
+- [GitHub Pages smoke test screenshots (2026-02-04)](./gh-pages-smoke-test-2026-02-04.md)
 
 Historical data, build metadata, and conversation transcripts are archived
 under `Documentation/conversations/` inside the repository.
