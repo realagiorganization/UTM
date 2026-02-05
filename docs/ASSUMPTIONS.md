@@ -8,3 +8,5 @@
 - The LLM CLI BDD GIF is a local placeholder until the GitHub Actions workflow overwrites it with the real VHS capture.
 - The GitHub Pages smoke test for 2026-02-01 uses the latest Discord-provided screenshot attachments as the capture set.
 - The GitHub Pages smoke test for 2026-02-02 uses the latest Discord-provided screenshot attachments as the capture set.
+- The GitHub Pages smoke test for 2026-02-05 uses the latest Discord-provided screenshot attachments as the capture set.
+- The pipeline runs in the `pipeline-discord-mode` branch, which is treated as the usual separate branch for GitHub Pages smoke test updates.
