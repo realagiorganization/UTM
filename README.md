@@ -1,5 +1,7 @@
 #  UTM
 [![Build](https://github.com/realagiorganization/UTM/actions/workflows/build.yml/badge.svg?branch=main)][1] [![TestFlight Release](https://github.com/realagiorganization/UTM/actions/workflows/testflight.yml/badge.svg?branch=main)][6] [![BDD Suite](https://github.com/realagiorganization/UTM/actions/workflows/bdd.yml/badge.svg?branch=main)][7] [![LLM CLI BDD](https://github.com/realagiorganization/UTM/actions/workflows/opencode-bdd.yml/badge.svg?branch=main)][8]
+[![Matrix Build](https://github.com/realagiorganization/UTM/actions/workflows/matrix-build.yml/badge.svg?branch=main)][9] [![GH Pages Publish](https://github.com/realagiorganization/UTM/actions/workflows/gh-pages-publish.yml/badge.svg?branch=main)][10] [![Issues](https://github.com/realagiorganization/UTM/actions/workflows/issues.yml/badge.svg?branch=main)][11] [![Conversation LaTeX](https://github.com/realagiorganization/UTM/actions/workflows/conversation-latex.yml/badge.svg?branch=main)][12]
+[![Awesome Actions](https://github.com/realagiorganization/UTM/actions/workflows/awesome-actions.yml/badge.svg?branch=main)][13] [![Agents Publisher](https://github.com/realagiorganization/UTM/actions/workflows/agents_publisher.yml/badge.svg?branch=main)][14]
 
 > It is possible to invent a single machine which can be used to compute any computable sequence.
 
@@ -102,3 +104,9 @@ Continuous integration hosting is provided by [MacStadium](https://www.macstadiu
   [6]: https://github.com/realagiorganization/UTM/actions/workflows/testflight.yml
   [7]: https://github.com/realagiorganization/UTM/actions/workflows/bdd.yml
   [8]: https://github.com/realagiorganization/UTM/actions/workflows/opencode-bdd.yml
+  [9]: https://github.com/realagiorganization/UTM/actions/workflows/matrix-build.yml
+  [10]: https://github.com/realagiorganization/UTM/actions/workflows/gh-pages-publish.yml
+  [11]: https://github.com/realagiorganization/UTM/actions/workflows/issues.yml
+  [12]: https://github.com/realagiorganization/UTM/actions/workflows/conversation-latex.yml
+  [13]: https://github.com/realagiorganization/UTM/actions/workflows/awesome-actions.yml
+  [14]: https://github.com/realagiorganization/UTM/actions/workflows/agents_publisher.yml
