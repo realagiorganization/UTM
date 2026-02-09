@@ -8,6 +8,7 @@ on:
     paths:
       - "bdd/**"
       - "scripts/opencode_mock_request.py"
+      - "scripts/install_opencode_cli.sh"
       - "scripts/run_opencode_in_tmux.sh"
       - "automation/vhs/opencode.tape"
       - ".github/workflows/opencode-bdd.yml"
@@ -32,6 +33,11 @@ jobs:
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y tmux
+
+      - name: Install opencode CLI mock
+        run: |
+          bin_dir=$(./scripts/install_opencode_cli.sh)
+          echo "$bin_dir" >> "$GITHUB_PATH"
 
       - name: Install BDD dependencies
         run: pip install behave
