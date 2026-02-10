@@ -16,3 +16,4 @@
 - The pipeline runs in the `pipeline-discord-mode` branch, which is treated as the usual separate branch for GitHub Pages smoke test updates.
 - The GitHub Pages smoke test for 2025-12-20 uses the Discord-provided screenshot attachments as the capture set.
 - The current run focuses on verifying the LLM CLI BDD/VHS/README coverage based on the latest Discord queue context.
+- The current GitHub Pages screenshot request is satisfied by the existing 2026-02-10 smoke test assets and does not require an additional capture set.
