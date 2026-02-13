@@ -3,6 +3,8 @@ name: Awesome GitHub Actions Report
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - 'automation/awesome-actions/**'
       - '.github/workflows/awesome-actions.yml'
