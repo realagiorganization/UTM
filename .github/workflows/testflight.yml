@@ -1,0 +1,190 @@
+name: TestFlight Release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      rebuild_sysroot:
+        description: 'Force rebuild sysroot?'
+        required: true
+        default: 'false'
+
+env:
+  BUILD_XCODE_PATH: /Applications/Xcode_26.0.app
+  RUNNER_IMAGE: macos-15
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 60
+
+permissions:
+  contents: read
+
+jobs:
+  configuration:
+    name: Setup configuration
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.checker.outputs.runners }}
+      github-runner: ${{ steps.checker.outputs.github-runner }}
+    steps:
+      - name: Check for hosted runners
+        id: checker
+        shell: bash
+        env:
+          IS_SELF_HOSTED_RUNNER: ${{ vars.IS_SELF_HOSTED_RUNNER || (github.repository_owner == 'utmapp' && 'true') }}
+        run: |
+          echo "github-runner='$RUNNER_IMAGE'" >> $GITHUB_OUTPUT
+          if [ "$IS_SELF_HOSTED_RUNNER" == "true" ]; then
+            echo "runners=['self-hosted', 'macOS']" >> $GITHUB_OUTPUT
+          else
+            echo "runners='$RUNNER_IMAGE'" >> $GITHUB_OUTPUT
+          fi
+  build-sysroot:
+    name: Build Sysroot (iOS TCI)
+    runs-on: ${{ fromJSON(needs.configuration.outputs.runner) }}
+    needs: configuration
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ github.ref }}
+      - name: Setup Xcode
+        shell: bash
+        run: |
+          [[ "$(xcode-select -p)" == "${{ env.BUILD_XCODE_PATH }}"* ]] || sudo xcode-select -s "${{ env.BUILD_XCODE_PATH }}"
+      - name: Check Cache
+        id: cache-sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: ./sysroot-ios-tci-arm64
+          key: ios-tci-arm64-${{ hashFiles('scripts/build_dependencies.sh') }}-${{ hashFiles('patches/**') }}-${{ github.sha }}
+          restore-keys: ios-tci-arm64-${{ hashFiles('scripts/build_dependencies.sh') }}-${{ hashFiles('patches/**') }}
+          lookup-only: github.event.inputs.rebuild_sysroot != 'true'
+      - name: Setup Path
+        shell: bash
+        run: |
+          echo "/usr/local/opt/bison/bin:/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
+      - name: Install Requirements
+        if: (steps.cache-sysroot.outputs.cache-matched-key == '' || github.event.inputs.rebuild_sysroot == 'true') && needs.configuration.outputs.runner == env.RUNNER_IMAGE
+        run: |
+          brew uninstall cmake
+          brew install bison pkg-config gettext glib-utils libgpg-error nasm make meson
+          pip3 install --user six pyparsing
+          rm -f /usr/local/lib/pkgconfig/*.pc
+      - name: Build Sysroot
+        if: steps.cache-sysroot.outputs.cache-matched-key == '' || github.event.inputs.rebuild_sysroot == 'true'
+        run: ./scripts/build_dependencies.sh -p ios-tci -a arm64
+      - name: Save Cache
+        if: steps.cache-sysroot.outputs.cache-matched-key == ''
+        uses: actions/cache/save@v4
+        with:
+          path: ./sysroot-ios-tci-arm64
+          key: ${{ steps.cache-sysroot.outputs.cache-primary-key }}
+          upload-chunk-size: 1048576
+  testflight:
+    name: Build and Upload (TestFlight)
+    runs-on: ${{ fromJSON(needs.configuration.outputs.runner) }}
+    needs: [configuration, build-sysroot]
+    strategy:
+      matrix:
+        configuration: [
+          {platform: "ios-tci", scheme: "iOS-SE", mode: "ipa-se-signed", name: "UTM-SE-signed.ipa", path: "UTM SE.ipa"},
+          {platform: "ios-tci", scheme: "iOS-Remote", mode: "ipa-remote-signed", name: "UTM-Remote-signed.ipa", path: "UTM Remote.ipa"},
+        ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ github.ref }}
+      - name: Cache Sysroot
+        id: cache-sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: ./sysroot-${{ matrix.configuration.platform }}-arm64
+          key: ${{ matrix.configuration.platform }}-arm64-${{ hashFiles('scripts/build_dependencies.sh') }}-${{ hashFiles('patches/**') }}
+          fail-on-cache-miss: true
+      - name: Setup Xcode
+        shell: bash
+        run: |
+          [[ "$(xcode-select -p)" == "${{ env.BUILD_XCODE_PATH }}"* ]] || sudo xcode-select -s "${{ env.BUILD_XCODE_PATH }}"
+      - name: Ensure Docker daemon
+        shell: bash
+        run: |
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "::error::Docker CLI is not available on this runner."
+            exit 1
+          fi
+          if ! sudo docker system info >/dev/null 2>&1; then
+            echo "Starting Docker.app in headless mode..."
+            sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended &
+            ready=0
+            for i in {1..60}; do
+              if sudo docker system info >/dev/null 2>&1; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            if [ $ready -ne 1 ]; then
+              echo "::error::Docker daemon did not start in time."
+              exit 1
+            fi
+          fi
+          sudo docker system info
+      - name: Smoke Test (Compile)
+        run: |
+          xcodebuild -project UTM.xcodeproj \
+            -scheme "${{ matrix.configuration.scheme }}" \
+            -sdk iphoneos \
+            -configuration Release \
+            -arch arm64 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+      - name: Build Archive
+        run: |
+          DOCKER="sudo docker" \
+          XCODE_PATH='${{ env.BUILD_XCODE_PATH }}' \
+          SDK='iphoneos' \
+          SCHEME='${{ matrix.configuration.scheme }}' \
+          ARCHS='arm64' \
+          ARCHIVE_PATH='UTM' \
+          make docker-build
+      - name: Import signing certificate into keychain
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.SIGNING_CERTIFICATE_P12_DATA }}
+          p12-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+      - name: Import App Store Connect API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo $AUTHKEY_API_KEY | base64 --decode -o ~/.appstoreconnect/private_keys/AuthKey_$API_KEY.p8
+        env:
+          AUTHKEY_API_KEY: ${{ secrets.CONNECT_KEY }}
+          API_KEY: ${{ vars.CONNECT_KEY_ID }}
+      - name: Install Provisioning Profiles
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo $IOS_REMOTE_PROFILE_DATA | base64 --decode -o ~/Library/MobileDevice/Provisioning\ Profiles/$IOS_REMOTE_PROFILE_UUID.provisionprofile
+          echo $IOS_SE_PROFILE_DATA | base64 --decode -o ~/Library/MobileDevice/Provisioning\ Profiles/$IOS_SE_PROFILE_UUID.provisionprofile
+        env:
+          IOS_REMOTE_PROFILE_DATA: ${{ vars.IOS_REMOTE_PROFILE_DATA }}
+          IOS_REMOTE_PROFILE_UUID: ${{ vars.IOS_REMOTE_PROFILE_UUID }}
+          IOS_SE_PROFILE_DATA: ${{ vars.IOS_SE_PROFILE_DATA }}
+          IOS_SE_PROFILE_UUID: ${{ vars.IOS_SE_PROFILE_UUID }}
+      - name: Package for TestFlight
+        run: |
+          ./scripts/package.sh ${{ matrix.configuration.mode }} UTM.xcarchive . "$SIGNING_TEAM_ID" "$PROFILE_UUID" app-store
+        env:
+          SIGNING_TEAM_ID: ${{ vars.SIGNING_TEAM_ID }}
+          PROFILE_UUID: ${{ matrix.configuration.scheme == 'iOS-Remote' && vars.IOS_REMOTE_PROFILE_UUID || vars.IOS_SE_PROFILE_UUID }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.configuration.name }}
+          path: ${{ matrix.configuration.path }}
+      - name: Upload to TestFlight
+        run: |
+          xcrun altool --upload-app -t ios -f "${{ matrix.configuration.path }}" --apiKey "$API_KEY" --apiIssuer "$ISSUER_UUID"
+        env:
+          ISSUER_UUID: ${{ vars.CONNECT_ISSUER_ID }}
+          API_KEY: ${{ vars.CONNECT_KEY_ID }}

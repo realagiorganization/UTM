@@ -8,6 +8,17 @@ PDF is copied into this `docs/` directory so it becomes immediately accessible:
   branch run.
 - [HTML preview with navigation](./awesome-actions-report.html) — generated from
   the same PDF for quick browser viewing.
+- [GitHub Pages smoke test screenshots (2026-01-20)](./gh-pages-smoke-test-2026-01-20.md)
+- [GitHub Pages smoke test screenshots (2026-01-30)](./gh-pages-smoke-test-2026-01-30.md)
+- [GitHub Pages smoke test screenshots (2026-01-31)](./gh-pages-smoke-test-2026-01-31.md)
+- [GitHub Pages smoke test screenshots (2026-02-01)](./gh-pages-smoke-test-2026-02-01.md)
+- [GitHub Pages smoke test screenshots (2026-02-02)](./gh-pages-smoke-test-2026-02-02.md)
+- [GitHub Pages smoke test screenshots (2026-02-04)](./gh-pages-smoke-test-2026-02-04.md)
+- [GitHub Pages smoke test screenshots (2026-02-05)](./gh-pages-smoke-test-2026-02-05.md)
+- [GitHub Pages smoke test screenshots (2026-02-06)](./gh-pages-smoke-test-2026-02-06.md)
+- [GitHub Pages smoke test screenshots (2026-02-08)](./gh-pages-smoke-test-2026-02-08.md)
+- [GitHub Pages smoke test screenshots (2026-02-09)](./gh-pages-smoke-test-2026-02-09.md)
+- [GitHub Pages smoke test screenshots (2026-02-10)](./gh-pages-smoke-test-2026-02-10.md)
 
 Historical data, build metadata, and conversation transcripts are archived
 under `Documentation/conversations/` inside the repository.

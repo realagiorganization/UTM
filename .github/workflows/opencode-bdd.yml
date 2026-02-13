@@ -1,0 +1,57 @@
+name: LLM CLI BDD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "bdd/**"
+      - "scripts/opencode_mock_request.py"
+      - "scripts/install_opencode_cli.sh"
+      - "scripts/run_opencode_in_tmux.sh"
+      - "automation/vhs/opencode.tape"
+      - ".github/workflows/opencode-bdd.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  llm-cli-bdd:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, 'chore: update opencode gif')
+    runs-on: ubuntu-latest
+    env:
+      OPENCODE_LLM_KEY: ${{ secrets.OPENCODE_LLM_KEY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y tmux
+
+      - name: Install opencode CLI mock
+        run: |
+          bin_dir=$(./scripts/install_opencode_cli.sh)
+          echo "$bin_dir" >> "$GITHUB_PATH"
+
+      - name: Install BDD dependencies
+        run: pip install behave
+
+      - name: Run LLM CLI BDD scenario
+        run: behave bdd/features/opencode_cli_request.feature
+
+      - name: Record LLM CLI run
+        uses: charmbracelet/vhs-action@v2
+        with:
+          path: automation/vhs/opencode.tape
+
+      - name: Commit LLM CLI recording
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update opencode gif"
+          file_pattern: automation/vhs/opencode.gif

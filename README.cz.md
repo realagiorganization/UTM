@@ -1,6 +1,6 @@
 # UTM
 
-[![Build](https://github.com/utmapp/UTM/workflows/Build/badge.svg?branch=main&event=push)][1]
+[![Build](https://github.com/realagiorganization/UTM/actions/workflows/build.yml/badge.svg?branch=main)][1]
 
 > Je možné vynalézt jediný stroj, který lze použít k výpočtu libovolné vypočitatelné posloupnosti.
 
@@ -73,7 +73,7 @@ Kontinuální hostování integrace zajišťuje [MacStadium](https://www.macstad
 
 [<img src="https://uploads-ssl.webflow.com/5ac3c046c82724970fc60918/5c019d917bba312af7553b49_MacStadium-developerlogo.png" alt="Logo de MacStadium" width="250">](https://www.macstadium.com)
 
-  [1]: https://github.com/utmapp/UTM/actions?query=event%3Arelease+workflow%3ABuild
+  [1]: https://github.com/realagiorganization/UTM/actions/workflows/build.yml
   [2]: screen.png
   [3]: https://github.com/ktemkin/qemu/blob/with_tcti/tcg/aarch64-tcti/README.md
   [4]: https://github.com/ish-app/ish

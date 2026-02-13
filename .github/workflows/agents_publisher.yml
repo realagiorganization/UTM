@@ -2,10 +2,8 @@ name: Agents Publisher CI
 
 on:
   push:
-    paths:
-      - 'Scripting/agents_publisher/**'
-      - '.github/workflows/agents_publisher.yml'
-  pull_request:
+    branches:
+      - main
     paths:
       - 'Scripting/agents_publisher/**'
       - '.github/workflows/agents_publisher.yml'
