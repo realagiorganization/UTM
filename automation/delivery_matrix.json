@@ -1,0 +1,47 @@
+[
+  {
+    "name": "ios-testflight",
+    "track": "testflight",
+    "lane": "deploy_testflight",
+    "scheme": "iOS",
+    "app_identifier_env": "IOS_APP_IDENTIFIER",
+    "app_identifier_default": "com.utmapp.UTM",
+    "notes": "Primary iOS build to TestFlight"
+  },
+  {
+    "name": "ios-se-testflight",
+    "track": "testflight",
+    "lane": "deploy_testflight",
+    "scheme": "iOS-SE",
+    "app_identifier_env": "IOS_SE_APP_IDENTIFIER",
+    "app_identifier_default": "com.utmapp.UTM-SE",
+    "notes": "Slow Edition beta delivery"
+  },
+  {
+    "name": "ios-remote-testflight",
+    "track": "testflight",
+    "lane": "deploy_testflight",
+    "scheme": "iOS-Remote",
+    "app_identifier_env": "IOS_REMOTE_APP_IDENTIFIER",
+    "app_identifier_default": "com.utmapp.UTM-Remote",
+    "notes": "Remote beta delivery"
+  },
+  {
+    "name": "ios-se-appstore",
+    "track": "appstore",
+    "lane": "deploy_appstore",
+    "scheme": "iOS-SE",
+    "app_identifier_env": "IOS_SE_APP_IDENTIFIER",
+    "app_identifier_default": "com.utmapp.UTM-SE",
+    "notes": "Slow Edition App Store submission"
+  },
+  {
+    "name": "ios-remote-appstore",
+    "track": "appstore",
+    "lane": "deploy_appstore",
+    "scheme": "iOS-Remote",
+    "app_identifier_env": "IOS_REMOTE_APP_IDENTIFIER",
+    "app_identifier_default": "com.utmapp.UTM-Remote",
+    "notes": "Remote App Store submission"
+  }
+]

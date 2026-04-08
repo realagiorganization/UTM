@@ -1,0 +1,135 @@
+name: Fastlane Delivery
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag, or SHA to release from
+        required: true
+        default: main
+        type: string
+      track:
+        description: Delivery track to execute
+        required: true
+        default: testflight
+        type: choice
+        options:
+          - testflight
+          - appstore
+          - all
+      dry_run:
+        description: Print Fastlane commands without executing them
+        required: true
+        default: true
+        type: boolean
+      skip_codesign:
+        description: Skip Fastlane match and local signing sync
+        required: true
+        default: false
+        type: boolean
+
+env:
+  DEFAULT_SELF_HOSTED_RUNNER_LABELS_JSON: '["self-hosted","macOS","ARM64","realagi-mac","apple-builder","utm"]'
+  FASTLANE_SKIP_UPDATE_CHECK: "1"
+  FASTLANE_DISABLE_COLORS: "1"
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
+
+jobs:
+  plan:
+    name: Plan delivery matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      runner_labels: ${{ steps.plan.outputs.runner_labels }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - id: plan
+        shell: bash
+        env:
+          TRACK: ${{ inputs.track }}
+          RUNNER_LABELS_JSON: ${{ vars.SELF_HOSTED_RUNNER_LABELS_JSON || env.DEFAULT_SELF_HOSTED_RUNNER_LABELS_JSON }}
+        run: |
+          python3 -c 'import json, os; from pathlib import Path; track = os.environ["TRACK"]; rows = json.loads(Path("automation/delivery_matrix.json").read_text(encoding="utf-8")); rows = rows if track == "all" else [row for row in rows if row["track"] == track]; print("matrix=" + json.dumps({"include": rows}, separators=(",", ":"))); print("runner_labels=" + os.environ["RUNNER_LABELS_JSON"])' >> "$GITHUB_OUTPUT"
+      - name: Summarize plan
+        shell: bash
+        run: |
+          python3 -c 'import json; from pathlib import Path; rows = json.loads(Path("automation/delivery_matrix.json").read_text(encoding="utf-8")); print("## Delivery matrix"); print(); print("| Name | Track | Lane | Scheme | Identifier env |"); print("| --- | --- | --- | --- | --- |"); [print(f"| `{row[\"name\"]}` | `{row[\"track\"]}` | `{row[\"lane\"]}` | `{row[\"scheme\"]}` | `{row[\"app_identifier_env\"]}` |") for row in rows]' >> "$GITHUB_STEP_SUMMARY"
+
+  deliver:
+    name: Deliver ${{ matrix.name }}
+    needs: plan
+    if: ${{ fromJSON(needs.plan.outputs.matrix).include[0] != null }}
+    runs-on: ${{ fromJSON(needs.plan.outputs.runner_labels) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      APPLE_ID: ${{ vars.APPLE_ID }}
+      APP_STORE_CONNECT_TEAM_ID: ${{ vars.APP_STORE_CONNECT_TEAM_ID }}
+      APP_STORE_CONNECT_KEY_ID: ${{ vars.CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ vars.CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_KEY_BASE64: ${{ secrets.CONNECT_KEY }}
+      DEVELOPER_PORTAL_TEAM_ID: ${{ vars.DEVELOPER_PORTAL_TEAM_ID || vars.SIGNING_TEAM_ID }}
+      DELIVERY_DEVELOPER_DIR: ${{ vars.DELIVERY_DEVELOPER_DIR }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      REF_TO_BUILD: ${{ inputs.ref }}
+      DRY_RUN: ${{ inputs.dry_run }}
+      SKIP_CODESIGN: ${{ inputs.skip_codesign }}
+      MATRIX_NAME: ${{ matrix.name }}
+      MATRIX_LANE: ${{ matrix.lane }}
+      MATRIX_SCHEME: ${{ matrix.scheme }}
+      MATRIX_APP_IDENTIFIER_ENV: ${{ matrix.app_identifier_env }}
+      MATRIX_APP_IDENTIFIER_DEFAULT: ${{ matrix.app_identifier_default }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+      - name: Preflight host
+        shell: bash
+        run: |
+          echo "Runner: $(hostname)"
+          echo "Labels: ${{ needs.plan.outputs.runner_labels }}"
+          if [ -n "${DELIVERY_DEVELOPER_DIR}" ]; then
+            export DEVELOPER_DIR="${DELIVERY_DEVELOPER_DIR}"
+          fi
+          echo "DEVELOPER_DIR=${DEVELOPER_DIR:-$(xcode-select -p)}"
+          command -v fastlane >/dev/null 2>&1 || brew install fastlane
+          fastlane --version | head -n 2
+          xcodebuild -version | sed -n '1,2p'
+      - name: Execute Fastlane
+        shell: bash
+        run: |
+          mkdir -p logs
+          APP_IDENTIFIER="${!MATRIX_APP_IDENTIFIER_ENV:-$MATRIX_APP_IDENTIFIER_DEFAULT}"
+          CMD=(
+            fastlane
+            ios
+            "$MATRIX_LANE"
+            "branch:$REF_TO_BUILD"
+            "scheme:$MATRIX_SCHEME"
+            "app_identifier:$APP_IDENTIFIER"
+            "skip_codesign:$SKIP_CODESIGN"
+          )
+
+          printf 'Resolved app identifier: %s\n' "$APP_IDENTIFIER" | tee "logs/${MATRIX_NAME}.log"
+          printf 'Command: ' | tee -a "logs/${MATRIX_NAME}.log"
+          printf '%q ' "${CMD[@]}" | tee -a "logs/${MATRIX_NAME}.log"
+          printf '\n' | tee -a "logs/${MATRIX_NAME}.log"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "dry_run requested; skipping Fastlane execution" | tee -a "logs/${MATRIX_NAME}.log"
+            exit 0
+          fi
+
+          "${CMD[@]}" 2>&1 | tee -a "logs/${MATRIX_NAME}.log"
+      - name: Upload delivery log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastlane-${{ matrix.name }}-log
+          path: logs/${{ matrix.name }}.log

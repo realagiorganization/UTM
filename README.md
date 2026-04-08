@@ -49,6 +49,10 @@ UTM is also available for macOS: https://mac.getutm.app/
 
 ### [iOS Development](Documentation/iOSDevelopment.md)
 
+### [Release Guide](Documentation/Release.md)
+
+### [Delivery Automation](Documentation/DeliveryAutomation.md)
+
 ## Related
 
 * [iSH][4]: emulates a usermode Linux terminal interface for running x86 Linux applications on iOS

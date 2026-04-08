@@ -16,6 +16,8 @@ This document details the release procedure for UTM team members. The release pr
 12. Submit the signed package to App Store Connect.
 
 For more details see the [build.yml](../.github/workflows/build.yml) file.
+For the manual Fastlane dispatcher and the MacBook runner pool procedure, see
+[DeliveryAutomation.md](./DeliveryAutomation.md).
 
 ## Making a release
 
@@ -109,6 +111,42 @@ Below is a summary of all the variables and secrets used by GitHub Actions in th
 |`IOS_SE_PROFILE_DATA`            |Base64 encoded provisioning profile of iOS SE for App Store submission             |
 |`IOS_SE_PROFILE_UUID`            |UUID of provisioning profile above                                                 |
 |`IS_SELF_HOSTED_RUNNER`          |Set to `true` to use a self hosted macOS runner set up by the owner                |
+|`SELF_HOSTED_RUNNER_LABELS_JSON` |JSON array of runner labels for manual delivery and self-hosted build routing      |
+|`APPLE_ID`                       |Apple ID value exported into Fastlane delivery jobs                                |
+|`APP_STORE_CONNECT_TEAM_ID`      |App Store Connect team id exported into Fastlane delivery jobs                     |
+|`DEVELOPER_PORTAL_TEAM_ID`       |Developer portal team id exported into Fastlane delivery jobs                      |
+|`DELIVERY_DEVELOPER_DIR`         |Optional Xcode developer directory used by the manual Fastlane delivery workflow   |
+
+### Fastlane delivery matrix
+
+Manual branch-driven delivery now lives in
+[`.github/workflows/fastlane-delivery.yml`](../.github/workflows/fastlane-delivery.yml).
+It reads [`automation/delivery_matrix.json`](../automation/delivery_matrix.json)
+and dispatches the appropriate `fastlane ios deploy_testflight` or
+`fastlane ios deploy_appstore` invocation for each selected release surface.
+
+Use this when you need to test or ship one branch without going through the full
+release pipeline. Start with `dry_run=true` to validate matrix expansion,
+resolved bundle identifiers, runner selection, and the exact Fastlane command
+line before touching code signing or App Store Connect.
+
+### MacBook runner pool
+
+The current self-hosted builder for this repository is the MacBook-hosted runner
+`macbook-pro-utm` on `/Volumes/ActionsRunner/runners/utm` with labels:
+
+- `self-hosted`
+- `macOS`
+- `ARM64`
+- `realagi-mac`
+- `apple-builder`
+- `utm`
+
+The repo-owned bootstrap and debug helper is
+[`automation/bootstrap_actions_runner.sh`](../automation/bootstrap_actions_runner.sh).
+Run `automation/bootstrap_actions_runner.sh status` over SSH on the MacBook to
+confirm launchd state, GitHub registration, active listener processes, and the
+latest `_diag` logs before debugging workflow failures.
 
 ### Signing for release
 
